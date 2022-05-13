@@ -1,25 +1,48 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {
+  createRef,
+  RefObject,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import './App.scss';
 
 function App() {
+  const [title, setTitle] = useState('WHITE');
+
+  const refs: RefObject<HTMLDivElement>[] = useMemo(() => [], []);
+
+  const newRef = () => {
+    const ref = createRef<HTMLDivElement>();
+    refs.push(ref);
+    return ref;
+  };
+
+  useEffect(() => {
+    const boxObserver = new IntersectionObserver(
+      (entries, _) => {
+        entries.forEach(item => {
+          if (item.isIntersecting) {
+            const newTitle = item.target.id.toUpperCase();
+            setTitle(newTitle);
+          }
+        });
+      },
+      {
+        threshold: 0.9,
+      },
+    );
+
+    refs.forEach(ref => boxObserver.observe(ref.current as HTMLDivElement));
+  }, [refs]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <h1>{title}</h1>
+      <div id="white" className="white" ref={newRef()}></div>
+      <div id="green" className="green" ref={newRef()}></div>
+      <div id="yellow" className="yellow" ref={newRef()}></div>
+    </>
   );
 }
 
